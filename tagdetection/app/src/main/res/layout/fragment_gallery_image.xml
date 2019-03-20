@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/constraintLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:tag="tag"
+    tools:context=".activity.GalleryActivity$PlaceholderFragment">
+
+    <RelativeLayout
+        android:id="@+id/canvas_container"
+        android:gravity="top"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/colorAccent">
+
+        <ImageView
+            android:background="@color/colorPrimary"
+            android:layout_alignParentTop="true"
+            android:id="@+id/fragment_gallery_image"
+            android:layout_width="480px"
+
+            android:layout_height="640px" />
+    </RelativeLayout>
+
+
+</android.support.constraint.ConstraintLayout>

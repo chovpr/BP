@@ -1,0 +1,35 @@
+<resources>
+    <string name="app_name">TagDetection</string>
+
+    <string name="picture">Capture</string>
+    <string name="camera_error">Camera Error</string>
+    <string name="location">Location</string>
+    <string name="gallery_action">Gallery</string>
+    <string name="photo_action">Camera</string>
+    <string name="info_action">Info</string>
+    <string name="delete">Delete</string>
+
+    <string name="intro_message">
+    <![CDATA[
+
+       Tato aplikace se zaměřuje na jednoduchou detekci graffiti tagů v prostoru.
+
+    ]]>
+    </string>
+
+    <string name="intro_message1">
+    <![CDATA[
+
+    Součástí je funkční fotoaparát a galerie, ze které lze dohledat fotografie na mapě v případě, že je k dispozici určování polohy.
+
+    ]]>
+    </string>
+
+    <string name="intro_message2">
+    <![CDATA[
+
+    Aplikace je studentský projekt (bakalářská práce) vydávána pod licencí APACHE.
+
+    ]]>
+    </string>
+</resources>
