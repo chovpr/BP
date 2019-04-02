@@ -8,6 +8,7 @@
     <string name="photo_action">Kamera</string>
     <string name="info_action">Info</string>
     <string name="delete">Smazat</string>
+    <string name="request_permission">Je vyžadováno povolení.</string>
     <string name="intro_message">
     <![CDATA[
 

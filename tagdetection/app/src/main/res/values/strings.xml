@@ -8,6 +8,7 @@
     <string name="photo_action">Camera</string>
     <string name="info_action">Info</string>
     <string name="delete">Delete</string>
+    <string name="request_permission">This sample needs camera permission.</string>
 
     <string name="intro_message">
     <![CDATA[

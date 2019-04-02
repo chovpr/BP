@@ -1,19 +1,26 @@
+/*
+ * Copyright 2019 Přemysl Chovaneček. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.example.premca.mydetection.activity;
 
-import android.Manifest;
-import android.app.AlertDialog;
-import android.content.Context;
+
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -34,22 +41,8 @@ public abstract class BaseActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
 
-        /*if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 0);
-        }
-
-
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 0);
-        }*/
-
-
-
-
-
-        super.onCreate(savedInstanceState);
+         super.onCreate(savedInstanceState);
+         // Start the location looper.
         SmartLocation.with(this)
                 .location(new LocationGooglePlayServicesWithFallbackProvider(this))
                 .config(LocationParams.NAVIGATION)
@@ -88,14 +81,10 @@ public abstract class BaseActivity extends AppCompatActivity {
             intent = new Intent(this, InfoActivity.class);
 
         }
-
+        // Start selected intent - run activity.
         startActivity(intent);
         finish();
 
         return super.onOptionsItemSelected(item);
     }
-
-    /// PERMISSIONS
-
-
 }

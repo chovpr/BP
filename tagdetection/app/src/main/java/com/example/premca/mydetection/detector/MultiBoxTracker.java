@@ -123,7 +123,7 @@ public class MultiBoxTracker {
     boxPaint.setColor(Color.YELLOW);
     boxPaint.setAlpha(2000);
     boxPaint.setStyle(Style.STROKE);
-    boxPaint.setStrokeWidth(10);
+    boxPaint.setStrokeWidth(5);
     for (final Pair<Float, RectF> detection : screenRects) {
       final RectF rect = detection.second;
       canvas.drawRect(rect, boxPaint);
@@ -225,13 +225,6 @@ public class MultiBoxTracker {
       frameHeight = h;
       this.sensorOrientation = sensorOrientation;
       initialized = true;
-
-      /*if (objectTracker == null) {
-        String message =
-            "Object tracking support not found. "
-                + "See tensorflow/examples/android/README.md for details.";
-        Toast.makeText(context, message, Toast.LENGTH_LONG).show();
-      }*/
     }
 
     if (objectTracker == null) {

@@ -1,8 +1,27 @@
+/*
+ * Copyright 2016 The TensorFlow Authors. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ *
+ */
 package com.example.premca.mydetection.fragment;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
@@ -13,21 +32,17 @@ import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
-import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.StreamConfigurationMap;
-import android.media.Image;
 import android.media.ImageReader;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.support.annotation.NonNull;
-import android.text.TextUtils;
+import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.util.Size;
-import android.util.SparseIntArray;
 import android.view.LayoutInflater;
 import android.view.Surface;
 import android.view.TextureView;
@@ -38,7 +53,6 @@ import android.widget.Toast;
 import com.example.premca.mydetection.R;
 import com.example.premca.mydetection.component.AutoFitTextureView;
 
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -47,8 +61,10 @@ import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
-
-public class CameraFragment extends Fragment{
+/*
+ * A CameraFragment for the view.
+ */
+public class CameraFragment extends Fragment {
 
 
     private Size inputSize;
@@ -73,8 +89,12 @@ public class CameraFragment extends Fragment{
 
     private ImageReader.OnImageAvailableListener imageListener;
 
+    // this is editable, size of the photo depends on that.
+    public static int usedHeight = 640;
+    public static int usedWidth = 480;
+
     public CameraFragment(ConnectionCallback connectionCallback, ImageReader.OnImageAvailableListener imageListener) {
-        this.inputSize = new Size(640, 480);
+        this.inputSize = new Size(usedWidth, usedHeight);
         this.cameraConnectionCallback = connectionCallback;
         this.imageListener = imageListener;
 
@@ -84,11 +104,12 @@ public class CameraFragment extends Fragment{
             new CameraDevice.StateCallback() {
                 @Override
                 public void onOpened(final CameraDevice cd) {
+                    if(cd != null){
                     // This method is called when the camera is opened.  We start camera preview here.
                     cameraOpenCloseLock.release();
                     cameraDevice = cd;
                     createCameraPreviewSession();
-                }
+                }}
 
                 @Override
                 public void onDisconnected(final CameraDevice cd) {
@@ -160,10 +181,7 @@ public class CameraFragment extends Fragment{
         super.onResume();
         startBackgroundThread();
 
-        // When the screen is turned off and turned back on, the SurfaceTexture is already
-        // available, and "onSurfaceTextureAvailable" will not be called. In that case, we can open
-        // a camera and start preview from here (otherwise, we wait until the surface is ready in
-        // the SurfaceTextureListener).
+
         if (textureView.isAvailable()) {
             openCamera(textureView.getWidth(), textureView.getHeight());
         } else {
@@ -211,7 +229,19 @@ public class CameraFragment extends Fragment{
         }
     }
 
-    private void openCamera(final int width, final int height) {
+
+
+    public void openCamera(final int width, final int height) {
+
+        if(ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED)
+        {
+            ActivityCompat.requestPermissions(getActivity(),new String[]{
+                    Manifest.permission.CAMERA,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+            },200);
+            return;
+        }
         setUpCameraOutputs();
 
 
@@ -231,16 +261,6 @@ public class CameraFragment extends Fragment{
         }
     }
 
-
-    //private static final int MAX_PREVIEW_WIDTH = 640;
-
-    /**
-     * Max preview height that is guaranteed by Camera2 API
-     */
-   // private static final int MAX_PREVIEW_HEIGHT = 480;
-
-
-
     private void setUpCameraOutputs() {
         final Activity activity = getActivity();
         final CameraManager manager = (CameraManager) activity.getSystemService(Context.CAMERA_SERVICE);
@@ -252,9 +272,6 @@ public class CameraFragment extends Fragment{
 
             sensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
 
-            // Danger, W.R.! Attempting to use too large a preview size could  exceed the camera
-            // bus' bandwidth limitation, resulting in gorgeous previews but the storage of
-            // garbage capture data.
             previewSize =
                     chooseOptimalSize(map.getOutputSizes(SurfaceTexture.class),
                             inputSize.getWidth(),
@@ -294,7 +311,6 @@ public class CameraFragment extends Fragment{
             // We set up a CaptureRequest.Builder with the output Surface.
             previewRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
             previewRequestBuilder.addTarget(surface);
-
 
             // Create the reader for the preview frames.
             previewReader =
@@ -351,7 +367,6 @@ public class CameraFragment extends Fragment{
         }
     }
 
-
     protected static Size chooseOptimalSize(final Size[] choices, final int width, final int height) {
         final int minSize = Math.max(Math.min(width, height), MINIMUM_PREVIEW_SIZE);
         final Size desiredSize = new Size(width, height);
@@ -372,7 +387,6 @@ public class CameraFragment extends Fragment{
                 tooSmall.add(option);
             }
         }
-
 
         if (exactSizeFound) {
             return desiredSize;
@@ -454,7 +468,6 @@ public class CameraFragment extends Fragment{
         }
     }
 
-
     private final CameraCaptureSession.CaptureCallback CaptureCallback =
             new CameraCaptureSession.CaptureCallback() {
                 @Override
@@ -474,3 +487,4 @@ public class CameraFragment extends Fragment{
         super.onActivityCreated(savedInstanceState);
     }
 }
+

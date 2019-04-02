@@ -1,16 +1,46 @@
+/*
+ * Copyright 2016 The TensorFlow Authors. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
+    // THIS FILE IS MADE BY PŘEMYSL CHOVANEČEK. FILE CONTAINS METHODS LICENSED BY THE LICENSE ABOVE.
+/*
+ *
+ * Copyright 2019 Přemysl Chovaneček. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.example.premca.mydetection.activity;
 
 
-import android.Manifest;
-import android.content.Context;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
-import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Typeface;
@@ -19,14 +49,11 @@ import android.hardware.Camera;
 import android.media.ExifInterface;
 import android.media.Image;
 import android.media.ImageReader;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.SystemClock;
 import android.os.Trace;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.util.Size;
 import android.util.TypedValue;
@@ -44,20 +71,19 @@ import com.example.premca.mydetection.detector.MultiBoxTracker;
 import com.example.premca.mydetection.detector.TFLiteObjectDetectionAPIModel;
 import com.example.premca.mydetection.fragment.CameraFragment;
 import com.example.premca.mydetection.model.DetectionPosition;
-import com.example.premca.mydetection.model.FotoObject;
+import com.example.premca.mydetection.model.PhotoObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Vector;
 
 import io.realm.Realm;
@@ -82,6 +108,7 @@ public class MainActivity extends BaseActivity implements ImageReader.OnImageAva
     private enum DetectorMode {
         TF_OD_API
     }
+
 
     private static final float MINIMUM_CONFIDENCE_TF_OD_API = 0.6f;
     private static final boolean SAVE_PREVIEW_BITMAP = false;
@@ -121,28 +148,17 @@ public class MainActivity extends BaseActivity implements ImageReader.OnImageAva
     private Classifier detector;
     public Button capture;
 
-    int PERMISSION_ALL = 1;
-    String[] PERMISSIONS = {
-            android.Manifest.permission.CAMERA,
-            android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
-            Manifest.permission.ACCESS_FINE_LOCATION
-    };
-
-    final private int REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS = 124;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if(!doPermissions(this, PERMISSIONS)){
-            ActivityCompat.requestPermissions(this, PERMISSIONS, PERMISSION_ALL);
-        }
 
         setContentView(R.layout.activity_main);
         setFragment();
 
         capture = findViewById(R.id.button_capture);
         capture.setOnClickListener(new View.OnClickListener() {
+            // Button for making a photo.
             @Override
             public void onClick(View view) {
                 Log.e("Cam", "onClick");
@@ -152,17 +168,6 @@ public class MainActivity extends BaseActivity implements ImageReader.OnImageAva
                 }
             }
         });
-    }
-
-    public static boolean doPermissions(Context context, String... permissions) {
-        if (context != null && permissions != null) {
-            for (String permission : permissions) {
-                if (ActivityCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
-                    return false;
-                }
-            }
-        }
-        return true;
     }
 
     private void setFragment() {
@@ -247,13 +252,7 @@ public class MainActivity extends BaseActivity implements ImageReader.OnImageAva
                         tracker.drawDebug(canvas);
 
                         final Vector<String> lines = new Vector<String>();
-                        if (detector != null) {
-                            final String statString = detector.getStatString();
-                            final String[] statLines = statString.split("\n");
-                            for (final String line : statLines) {
-                                lines.add(line);
-                            }
-                        }
+                        // write inference time
                         lines.add("");
                         lines.add("Inference time: " + lastProcessingTimeMs + "ms");
 
@@ -298,13 +297,18 @@ public class MainActivity extends BaseActivity implements ImageReader.OnImageAva
             ImageUtils.saveBitmap(croppedBitmap);
         }
 
+        // Runnable - applying detections, calculating inference time.
         runInBackground(
                 new Runnable() {
                     @Override
                     public void run() {
 
                         final long startTime = SystemClock.uptimeMillis();
+
+                        // making detections
                         final List<Classifier.Recognition> results = detector.recognizeImage(croppedBitmap);
+
+                        // calculation the inference time
                         lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime;
 
                         cropCopyBitmap = Bitmap.createBitmap(croppedBitmap);
@@ -395,6 +399,7 @@ public class MainActivity extends BaseActivity implements ImageReader.OnImageAva
         return yuvBytes[0];
     }
 
+    // preview
     protected int getScreenOrientation() {
         switch (getWindowManager().getDefaultDisplay().getRotation()) {
             case Surface.ROTATION_270:
@@ -431,6 +436,7 @@ public class MainActivity extends BaseActivity implements ImageReader.OnImageAva
         return Bitmap.createBitmap(bitmap, 0, 0, w, h, mtx, true);
     }
 
+    // processing the image - making photo during the click on the button
     @Override
     public void onImageAvailable(ImageReader reader) {
         if (previewWidth == 0 || previewHeight == 0) {
@@ -500,25 +506,103 @@ public class MainActivity extends BaseActivity implements ImageReader.OnImageAva
     }
 
 
+    // saving images, creating annotations
     private void saveImage(Image.Plane[] imagePlanes, Image image) {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         mFile = new File(this.getExternalFilesDir(null), File.separator + timeStamp + ".jpeg");
+        String filename = File.separator + timeStamp + ".xml";
+        // Creating a file for the photo.
         createData(mFile.getPath(), System.currentTimeMillis());
-
         (new ImageSaver(imagePlanes, mFile)).saveImage(image);
+
+        // New xml file for annotation.
+        mFile1 = new File(this.getExternalFilesDir(null), filename);
+        FileOutputStream fos = null;
+
+        // Following logic takes care about annotations and write them into the xml file.
+
+        String content = "<annotation>\n\t<folder>set</folder>\n<filename>"
+                    + filename +"</filename><path>"+mFile1.getPath()+"</path>\n" +
+                    "<source>\n" +
+                    "    <database>Unknown</database>\n" +
+                    "  </source>\n" +
+                    "  <size>\n" +
+                    "    <width>"+CameraFragment.usedWidth+"</width>\n" +
+                    "    <height>"+CameraFragment.usedHeight+"\"</height>\n" +
+                    "    <depth>3</depth>\n" +
+                    "  </size>\n" +
+                    "  <segmented>0</segmented>";
+           int xmin = 0;
+           int xmax = 0;
+           int d1, d2;
+        for (RectF rectF : mResults) {
+            // Locating the rectangle according the axis y.
+            if(rectF.bottom>CameraFragment.usedWidth/2 && rectF.top<CameraFragment.usedWidth/2) {
+                 d1 = (int)rectF.bottom - CameraFragment.usedWidth/2;
+                 d2 = CameraFragment.usedWidth/2 - (int)rectF.top;
+                 xmin = CameraFragment.usedWidth/2 - d1;
+                 xmax = d2 + CameraFragment.usedWidth/2;
+            }
+            else if(rectF.bottom>CameraFragment.usedWidth/2 && rectF.top>CameraFragment.usedWidth/2) {
+                d1 = (int)rectF.bottom - CameraFragment.usedWidth/2;
+                d2 = (int)rectF.top - CameraFragment.usedWidth/2;
+                xmin = CameraFragment.usedWidth/2 - d1;
+                xmax = CameraFragment.usedWidth/2 - d2;
+            }
+            else if(rectF.bottom<CameraFragment.usedWidth/2 && rectF.top<CameraFragment.usedWidth/2) {
+                d1 = CameraFragment.usedWidth/2 - (int)rectF.bottom;
+                d2 = CameraFragment.usedWidth/2 - (int)rectF.top;
+                xmin = CameraFragment.usedWidth/2 + d1;
+                xmax = CameraFragment.usedWidth/2 + d2;
+            }
+
+            content = content + "\n" +
+                    "<object>\n" +
+                    "    <name>tag</name>\n" +
+                    "    <pose>Unspecified</pose>\n" +
+                    "    <truncated>0</truncated>\n" +
+                    "    <difficult>0</difficult>\n" +
+                    "    <bndbox>\n" +
+                    "<xmin>"+xmin+"</xmin>\n"+
+                    "      <ymin>"+(int)rectF.left+"</ymin>\n" +
+                      "      <xmax>"+xmax+"</xmax>\n"+
+                    "      <ymax>"+(int)rectF.right+"</ymax>\n" +
+                    "    </bndbox>\n" +
+                    "  </object>";
+
+
+
+
+        }
+
+
+        content = content + "\n </annotation>";
+
+            try {
+                fos = new FileOutputStream(mFile1);
+                fos.write(content.getBytes());
+                Toast.makeText(this, "Uloženo do" + getFilesDir() + "/" + filename,
+                        Toast.LENGTH_LONG).show();
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
     }
 
+    // pushing to the database
     private void createData(String path, long miliTimestamp) {
         Realm mRealm = Realm.getDefaultInstance();
         mRealm.executeTransaction(realm -> {
-            FotoObject fotoObject = new FotoObject();
+            PhotoObject fotoObject = new PhotoObject();
             fotoObject.setPicturePath(path);
             fotoObject.setMiliTimestamp(miliTimestamp);
-            fotoObject.setId(FotoObject.getNextId(realm));
+            fotoObject.setId(PhotoObject.getNextId(realm));
             fotoObject.setLat(String.valueOf(this.lat));
             fotoObject.setLng(String.valueOf(this.lng));
             realm.copyToRealmOrUpdate(fotoObject);
+
             int id = DetectionPosition.getNextId(realm);
 
             for (RectF rectF : mResults) {
@@ -530,13 +614,9 @@ public class MainActivity extends BaseActivity implements ImageReader.OnImageAva
                 position.setRight(rectF.right);
                 position.setTop(rectF.top);
 
-                Log.e("WHAT", String.valueOf(position.getId()));
-
                 realm.copyToRealmOrUpdate(position);
                 fotoObject.addPosition(position);
             }
-
-            Log.e("WHAT2", fotoObject.getDetectionPositions().toString());
             realm.copyToRealmOrUpdate(fotoObject);
         });
     }
@@ -551,7 +631,10 @@ public class MainActivity extends BaseActivity implements ImageReader.OnImageAva
     }
 
     private File mFile;
+    private File mFile1;
 
+
+    // class for imageSaving - inspired by android example
     private static class ImageSaver {
 
         private final Image.Plane[] imagePlanes;
@@ -562,11 +645,14 @@ public class MainActivity extends BaseActivity implements ImageReader.OnImageAva
             mFile = file;
         }
 
+
         public void saveImage(Image image) {
             ByteBuffer buffer = this.imagePlanes[0].getBuffer();
             byte[] bytes = new byte[buffer.remaining()];
             buffer.get(bytes);
             FileOutputStream output = null;
+
+            // converting the preview format
 
             byte[] data = NV21toJPEG(YUV420toNV21(image), image.getWidth(), image.getHeight(), 100);
             try {
@@ -575,6 +661,7 @@ public class MainActivity extends BaseActivity implements ImageReader.OnImageAva
 
                 ExifInterface exif = new ExifInterface(mFile.toString());
 
+                // Rotate the image before saving.
                 Log.d("EXIF value", exif.getAttribute(ExifInterface.TAG_ORIENTATION));
                 if (exif.getAttribute(ExifInterface.TAG_ORIENTATION).equalsIgnoreCase("6")) {
                     realImage = rotate(realImage, 90);
@@ -601,7 +688,7 @@ public class MainActivity extends BaseActivity implements ImageReader.OnImageAva
         }
     }
 
-    // CONVERT TO JPEG
+    // CONVERT TO PREVIEW FORMAT
     private static byte[] NV21toJPEG(byte[] nv21, int width, int height, int quality) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         YuvImage yuv = new YuvImage(nv21, ImageFormat.NV21, width, height, null);

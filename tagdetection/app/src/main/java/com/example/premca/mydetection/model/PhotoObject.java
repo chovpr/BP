@@ -1,15 +1,31 @@
+/*
+ * Copyright 2019 Přemysl Chovaneček. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.example.premca.mydetection.model;
-
-import android.graphics.RectF;
-
-import java.lang.reflect.Array;
 
 import io.realm.Realm;
 import io.realm.RealmList;
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
 
-public class FotoObject extends RealmObject {
+/*
+ * A database for each photo.
+ */
+
+public class PhotoObject extends RealmObject {
 
     @PrimaryKey
     private int id;
@@ -68,13 +84,14 @@ public class FotoObject extends RealmObject {
         this.lng = lng;
     }
 
+    // add position of square
     public void addPosition(DetectionPosition position) {
         detections.add(position);
     }
 
 
     public static int getNextId(Realm realm) {
-        Number currentIdNum = realm.where(FotoObject.class).max("id");
+        Number currentIdNum = realm.where(PhotoObject.class).max("id");
         int nextId;
         if (currentIdNum == null) {
             nextId = 1;
